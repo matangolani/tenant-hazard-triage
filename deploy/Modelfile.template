@@ -1,0 +1,10 @@
+# Ollama model for the fine-tuned Tenant Hazard Triage model (Qwen3-4B-Instruct-2507 + LoRA, Q4_K_M GGUF).
+# The template reproduces the training prompt exactly: system turn, user turn, then "assistant\n".
+FROM {{GGUF_PATH}}
+TEMPLATE """{{- range .Messages }}<|im_start|>{{ .Role }}
+{{ .Content }}<|im_end|>
+{{ end }}<|im_start|>assistant
+"""
+PARAMETER stop "<|im_end|>"
+PARAMETER temperature 0
+PARAMETER num_ctx 6144

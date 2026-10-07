@@ -1,0 +1,30 @@
+======================================================================
+  Zero-shot qwen3.5:4b
+======================================================================
+
+[all]  n=152  true emergencies=54
+  strict emergency recall     92.6% [82%–97%]
+  caught-or-escalated         96.3%
+  emergency precision         79.4% [68%–88%]  (63 predicted)
+  sent to human review        57.9%
+  severity macro-F1 0.58   category accuracy 90.1% (strict 82.9%)
+
+[clear]  n=130  true emergencies=51
+  strict emergency recall     94.1% [84%–98%]
+  caught-or-escalated         98.0%
+  emergency precision         88.9% [78%–95%]  (54 predicted)
+  sent to human review        55.4%
+  severity macro-F1 0.63   category accuracy 89.2% (strict 80.8%)
+
+SEVERITY confusion, all (row = gold, col = predicted):
+  gold\pred    emerg  signi  routi  uncle  
+  emergency    50     2      2      0      
+  significant  12     19     3      0      
+  routine      1      7      51     0      
+  unclear      0      1      4      0      
+
+confidence calibration: high 83% (n=130), low 0% (n=4), medium 67% (n=18)
+reliability: 0 parse errors, 0 schema violations, 0 policy violations (other_unclear + significant)
+median latency: 2812.3 ms
+
+metrics written to outputs/metrics_gold_v2_qwen3.5_4b.json

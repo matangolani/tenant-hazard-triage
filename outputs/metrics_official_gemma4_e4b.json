@@ -1,0 +1,406 @@
+{
+  "name": "Zero-shot gemma4:e4b",
+  "missing_predictions": [],
+  "subsets": {
+    "all": {
+      "name": "Zero-shot gemma4:e4b",
+      "n": 37,
+      "headline": {
+        "emergency_recall_strict": 0.7647,
+        "emergency_recall_strict_ci95": [
+          0.5274,
+          0.9045
+        ],
+        "emergency_recall_caught_or_escalated": 0.7647,
+        "emergency_precision": 0.8125,
+        "emergency_precision_ci95": [
+          0.5699,
+          0.9341
+        ],
+        "emergency_support": 17,
+        "emergency_predicted": 16,
+        "human_review_rate": 0.4595
+      },
+      "severity_accuracy": 0.7027,
+      "severity_macro_f1": 0.6991,
+      "category_accuracy_strict": 0.9459,
+      "category_accuracy_lenient": 0.9459,
+      "category_macro_f1_strict": 0.9636,
+      "severity_per_class": {
+        "emergency": {
+          "precision": 0.812,
+          "recall": 0.765,
+          "f1": 0.788,
+          "support": 17
+        },
+        "significant": {
+          "precision": 0.562,
+          "recall": 0.75,
+          "f1": 0.643,
+          "support": 12
+        },
+        "routine": {
+          "precision": 1.0,
+          "recall": 0.5,
+          "f1": 0.667,
+          "support": 8
+        },
+        "unclear": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "category_per_class": {
+        "damp_mould": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 5
+        },
+        "excess_cold": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 4
+        },
+        "excess_heat": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 3
+        },
+        "falls": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 9
+        },
+        "structural": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 4
+        },
+        "fire_explosion": {
+          "precision": 1.0,
+          "recall": 0.667,
+          "f1": 0.8,
+          "support": 3
+        },
+        "electrical": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 3
+        },
+        "hygiene_pests": {
+          "precision": 1.0,
+          "recall": 0.833,
+          "f1": 0.909,
+          "support": 6
+        },
+        "other_unclear": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "severity_confusion": {
+        "emergency": {
+          "emergency": 13,
+          "significant": 4
+        },
+        "significant": {
+          "significant": 9,
+          "emergency": 3
+        },
+        "routine": {
+          "routine": 4,
+          "unclear": 1,
+          "significant": 3
+        },
+        "unclear": {}
+      },
+      "confidence_calibration": {
+        "high": {
+          "severity_accuracy": 0.722,
+          "n": 36
+        },
+        "medium": {
+          "severity_accuracy": 0.0,
+          "n": 1
+        }
+      },
+      "policy_violations": 1,
+      "parse_errors": 0,
+      "schema_violations": 0,
+      "latency_ms_median": 1756.3
+    },
+    "clean": {
+      "name": "Zero-shot gemma4:e4b",
+      "n": 25,
+      "headline": {
+        "emergency_recall_strict": 0.7143,
+        "emergency_recall_strict_ci95": [
+          0.4535,
+          0.8828
+        ],
+        "emergency_recall_caught_or_escalated": 0.7143,
+        "emergency_precision": 0.7692,
+        "emergency_precision_ci95": [
+          0.4974,
+          0.9182
+        ],
+        "emergency_support": 14,
+        "emergency_predicted": 13,
+        "human_review_rate": 0.52
+      },
+      "severity_accuracy": 0.72,
+      "severity_macro_f1": 0.7182,
+      "category_accuracy_strict": 0.96,
+      "category_accuracy_lenient": 0.96,
+      "category_macro_f1_strict": 0.975,
+      "severity_per_class": {
+        "emergency": {
+          "precision": 0.769,
+          "recall": 0.714,
+          "f1": 0.741,
+          "support": 14
+        },
+        "significant": {
+          "precision": 0.667,
+          "recall": 0.727,
+          "f1": 0.696,
+          "support": 11
+        },
+        "routine": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        },
+        "unclear": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "category_per_class": {
+        "damp_mould": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 3
+        },
+        "excess_cold": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 2
+        },
+        "excess_heat": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 2
+        },
+        "falls": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 6
+        },
+        "structural": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 3
+        },
+        "fire_explosion": {
+          "precision": 1.0,
+          "recall": 0.667,
+          "f1": 0.8,
+          "support": 3
+        },
+        "electrical": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 1
+        },
+        "hygiene_pests": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1": 1.0,
+          "support": 5
+        },
+        "other_unclear": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1": 0.0,
+          "support": 0
+        }
+      },
+      "severity_confusion": {
+        "emergency": {
+          "emergency": 10,
+          "significant": 4
+        },
+        "significant": {
+          "significant": 8,
+          "emergency": 3
+        },
+        "routine": {},
+        "unclear": {}
+      },
+      "confidence_calibration": {
+        "high": {
+          "severity_accuracy": 0.72,
+          "n": 25
+        }
+      },
+      "policy_violations": 1,
+      "parse_errors": 0,
+      "schema_violations": 0,
+      "latency_ms_median": 1793.6
+    }
+  },
+  "n": 37,
+  "headline": {
+    "emergency_recall_strict": 0.7647,
+    "emergency_recall_strict_ci95": [
+      0.5274,
+      0.9045
+    ],
+    "emergency_recall_caught_or_escalated": 0.7647,
+    "emergency_precision": 0.8125,
+    "emergency_precision_ci95": [
+      0.5699,
+      0.9341
+    ],
+    "emergency_support": 17,
+    "emergency_predicted": 16,
+    "human_review_rate": 0.4595
+  },
+  "severity_accuracy": 0.7027,
+  "severity_macro_f1": 0.6991,
+  "category_accuracy_strict": 0.9459,
+  "category_accuracy_lenient": 0.9459,
+  "category_macro_f1_strict": 0.9636,
+  "severity_per_class": {
+    "emergency": {
+      "precision": 0.812,
+      "recall": 0.765,
+      "f1": 0.788,
+      "support": 17
+    },
+    "significant": {
+      "precision": 0.562,
+      "recall": 0.75,
+      "f1": 0.643,
+      "support": 12
+    },
+    "routine": {
+      "precision": 1.0,
+      "recall": 0.5,
+      "f1": 0.667,
+      "support": 8
+    },
+    "unclear": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "category_per_class": {
+    "damp_mould": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 5
+    },
+    "excess_cold": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 4
+    },
+    "excess_heat": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 3
+    },
+    "falls": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 9
+    },
+    "structural": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 4
+    },
+    "fire_explosion": {
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "support": 3
+    },
+    "electrical": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 3
+    },
+    "hygiene_pests": {
+      "precision": 1.0,
+      "recall": 0.833,
+      "f1": 0.909,
+      "support": 6
+    },
+    "other_unclear": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "support": 0
+    }
+  },
+  "severity_confusion": {
+    "emergency": {
+      "emergency": 13,
+      "significant": 4
+    },
+    "significant": {
+      "significant": 9,
+      "emergency": 3
+    },
+    "routine": {
+      "routine": 4,
+      "unclear": 1,
+      "significant": 3
+    },
+    "unclear": {}
+  },
+  "confidence_calibration": {
+    "high": {
+      "severity_accuracy": 0.722,
+      "n": 36
+    },
+    "medium": {
+      "severity_accuracy": 0.0,
+      "n": 1
+    }
+  },
+  "policy_violations": 1,
+  "parse_errors": 0,
+  "schema_violations": 0,
+  "latency_ms_median": 1756.3
+}

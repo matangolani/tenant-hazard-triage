@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenant Hazard Triage</title>
+<meta name="description" content="Small open language models that triage social-housing repair reports under Awaab's Law, running locally: how it was built and how well it works.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FCFCFD; --ink: #18212B; --muted: #5A6472; --rule: #D9DEE4; --field: #F3F5F8;
+    --link: #24527A; --accent: #24527A; --accent-soft: #E6EEF6; --quiet: #8A94A3;
+    --emergency: #B42318; --emergency-bg: #FCEDEB; --significant: #B07D00; --significant-bg: #FBF3E0;
+    --routine: #1E8463; --routine-bg: #E8F4EF; --unclear: #6155B8; --unclear-bg: #EFEDF9;
+    --serif: "Literata", Georgia, serif; --sans: "Public Sans", system-ui, sans-serif;
+    --measure: 68ch;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.65 var(--serif); }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 3px solid color-mix(in srgb, var(--link) 45%, transparent); outline-offset: 2px; }
+  main { max-width: 920px; margin: 0 auto; padding: 56px 24px 80px; }
+  .prose { max-width: var(--measure); }
+  h1 { font: 600 2.6rem/1.1 var(--serif); margin: 0; letter-spacing: -0.01em; }
+  .subtitle { font: 400 1.3rem/1.4 var(--serif); color: var(--muted); margin: 12px 0 20px; max-width: 34em; }
+  .byline { font: 400 0.95rem/1.5 var(--sans); color: var(--muted); display: flex; gap: 20px; flex-wrap: wrap; }
+  .byline a { font-weight: 500; }
+  h2 { font: 600 1.45rem/1.25 var(--serif); margin: 56px 0 12px; }
+  h2 .n { color: var(--quiet); font-weight: 400; margin-right: 0.4em; }
+  h3 { font: 600 1.05rem/1.4 var(--sans); margin: 28px 0 6px; }
+  p { margin: 0 0 1em; }
+  .summary { margin-top: 36px; padding: 20px 0 4px; border-top: 1px solid var(--rule); }
+  .summary p { font-size: 1.05rem; }
+  .pending { color: var(--muted); font-style: italic; }
+  figure { margin: 32px 0; }
+  figcaption { font: 400 0.9rem/1.5 var(--sans); color: var(--muted); margin-top: 10px; max-width: var(--measure); }
+  figcaption b { color: var(--ink); font-weight: 600; }
+  .sans { font-family: var(--sans); }
+  ul.plain { padding-left: 1.2em; } ul.plain li { margin-bottom: 0.4em; }
+
+  /* Figure 1: message -> triage */
+  .case { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 20px; align-items: center; font-family: var(--sans); }
+  .msg { background: #fff; border: 1px solid var(--rule); border-radius: 14px 14px 14px 4px; padding: 16px 18px; font-size: 0.98rem; line-height: 1.55; }
+  .msg .who { display: block; color: var(--muted); font-size: 0.8rem; margin-bottom: 6px; }
+  .arrow { color: var(--quiet); font-size: 1.4rem; }
+  .tri { border: 1px solid var(--rule); border-radius: 8px; background: #fff; overflow: hidden; }
+  .tri .head { padding: 16px 18px 14px; border-left: 6px solid var(--c); background: var(--bg); }
+  .tri .word { font: 600 1.7rem/1 var(--serif); color: var(--c); margin: 0 0 6px; }
+  .tri .dl { margin: 0; font-size: 0.92rem; }
+  .tri dl { margin: 0; padding: 12px 18px 14px; display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; font-size: 0.9rem; }
+  .tri dt { color: var(--muted); } .tri dd { margin: 0; }
+  .tri .flag { margin: 0; padding: 9px 18px; background: var(--field); font-size: 0.88rem; font-weight: 500; border-top: 1px solid var(--rule); }
+
+  /* Deadline table and Table 1 */
+  table { border-collapse: collapse; width: 100%; font: 400 0.92rem/1.45 var(--sans); }
+  caption { caption-side: bottom; text-align: left; font: 400 0.9rem/1.5 var(--sans); color: var(--muted); padding-top: 10px; }
+  caption b { color: var(--ink); }
+  th, td { text-align: left; padding: 9px 12px 9px 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  thead th { font-weight: 600; border-bottom: 1.5px solid var(--ink); }
+  tbody td:first-child { white-space: nowrap; }
+  #t1 tbody td:first-child { white-space: normal; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; padding-right: 0; padding-left: 12px; white-space: nowrap; }
+  td .ci { color: var(--muted); font-size: 0.82rem; display: block; }
+  tr.ft td { background: var(--accent-soft); }
+  tr.ft td:first-child { box-shadow: inset 3px 0 0 var(--accent); padding-left: 10px; }
+  td .note { display: block; color: var(--muted); font-size: 0.8rem; }
+  .scroll { overflow-x: auto; }
+  .sev-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--c); margin-right: 8px; vertical-align: 1px; }
+
+  /* Figure 2: pipeline */
+  ol.pipeline { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; font-family: var(--sans); counter-reset: step; }
+  ol.pipeline li { position: relative; border-top: 3px solid var(--ink); padding-top: 10px; font-size: 0.88rem; line-height: 1.45; counter-increment: step; }
+  ol.pipeline li::before { content: counter(step); font: 600 0.8rem var(--sans); color: var(--quiet); display: block; margin-bottom: 2px; }
+  ol.pipeline b { display: block; font-size: 0.95rem; margin-bottom: 4px; }
+  ol.pipeline .fig { color: var(--muted); }
+
+  /* Figure 3: dot plot */
+  .panels { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+  .panel h4 { font: 600 0.92rem var(--sans); margin: 0 0 6px; }
+  .panel svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .panel text { font-family: var(--sans); }
+  .tip { position: fixed; pointer-events: none; background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: 8px 10px;
+         font: 400 0.82rem/1.45 var(--sans); color: var(--ink); box-shadow: 0 2px 10px rgba(24,33,43,.08); opacity: 0; transition: opacity .1s; max-width: 260px; z-index: 5; }
+  .tip b { font-weight: 600; }
+
+  /* Examples */
+  .examples { display: grid; gap: 16px; }
+  .ex { border-left: 4px solid var(--c); padding: 4px 0 4px 16px; font-family: var(--sans); }
+  .ex .kind { font-weight: 600; font-size: 0.88rem; }
+  .ex .text { margin: 6px 0; font: italic 400 0.98rem/1.55 var(--serif); }
+  .ex .verdict { font-size: 0.86rem; color: var(--muted); }
+
+  pre { background: var(--field); border-radius: 6px; padding: 14px 16px; overflow-x: auto; font: 0.82rem/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .refs { font: 0.88rem/1.5 var(--sans); color: var(--muted); padding-left: 1.2em; }
+  .refs li { margin-bottom: 6px; }
+  footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule); font: 0.85rem var(--sans); color: var(--muted); }
+
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 8px 0 8px; font-family: var(--sans); }
+  .stat { border-top: 3px solid var(--ink); padding-top: 10px; }
+  .stat:first-child, .stat:nth-child(2), .stat:nth-child(3) { border-color: var(--accent); }
+  .stat .big { display: block; font: 600 1.9rem/1.1 var(--serif); }
+  .stat .small { display: block; color: var(--muted); font-size: 0.85rem; line-height: 1.4; margin-top: 4px; }
+  .picker { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; font-family: var(--sans); }
+  .picker button { border: 1px solid var(--rule); background: #fff; color: var(--ink); border-radius: 999px; padding: 6px 12px; font: 500 0.85rem var(--sans); cursor: pointer; }
+  .picker button:hover { border-color: var(--accent); color: var(--accent); }
+  .picker button[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+  .picker button.rand { border-style: dashed; }
+  .verdict-line { font: 0.92rem/1.5 var(--sans); margin: 12px 0 0; }
+  .verdict-line .ok { color: var(--routine); font-weight: 600; } .verdict-line .bad { color: var(--emergency); font-weight: 600; }
+  .tri .esc { margin: 0; padding: 0 18px 10px; background: var(--field); font-size: 0.82rem; color: var(--muted); }
+  @media (max-width: 760px) {
+    body { font-size: 16px; }
+    main { padding: 36px 16px 56px; }
+    h1 { font-size: 2.1rem; }
+    .case { grid-template-columns: 1fr; }
+    .arrow { transform: rotate(90deg); justify-self: center; }
+    ol.pipeline { grid-template-columns: 1fr 1fr; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .panels { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Tenant Hazard Triage</h1>
+    <p class="subtitle">Small open language models that sort social-housing repair reports by legal urgency</p>
+  </header>
+
+  <section class="summary prose" aria-label="Summary">
+    <p>Since October 2025, Awaab's Law has required social landlords in England to make emergency hazards safe within 24 hours of hearing about them. Those reports arrive as informal tenant messages in a busy inbox, and the failure that matters is an emergency left unread.</p>
+    <p>I built a model that reads each message, decides whether it is an emergency, a significant hazard or routine, works out the legal deadline and flags anything urgent for a person. Commercial repair systems exist; the question here was whether a small open model running locally, so tenants' health details never leave the landlord, can do this reliably, and how you would prove it.</p>
+  </section>
+  <div class="stats" id="stats"></div>
+
+  <h2 id="try"><span class="n">1</span>Try it</h2>
+  <div class="prose">
+    <p>Pick a test message to see what the system answered when it was scored, mistakes included.</p>
+  </div>
+  <figure class="replay">
+    <div class="picker" id="picker" aria-label="Test messages"></div>
+    <div class="case" id="replay-case" aria-live="polite"></div>
+    <p class="verdict-line" id="replay-verdict"></p>
+  </figure>
+
+  <h2 id="approach"><span class="n">2</span>How it works</h2>
+  <div class="prose">
+    <p>With no real tenant messages available, I turned the government's triage guidance into 38 rules, had a larger model write training messages in near-identical pairs that differ in one decisive detail, and kept only those an independent re-label agreed with. A 4-billion-parameter model was fine-tuned on them, then paired with a second small model that can escalate, but never downgrade, its answer.</p>
+  </div>
+  <figure>
+    <ol class="pipeline">
+      <li><b>Rules</b>38 rules from the official guidance generate the prompt, output schema and docs.</li>
+      <li><b>Synthetic data</b><span data-bind="synth-gen">1,447 messages written by GLM-5.3-Flash.</span></li>
+      <li><b>Filter</b><span data-bind="synth-kept">Blind re-label and contamination checks; 898 kept.</span></li>
+      <li><b>Fine-tune</b>QLoRA on Qwen3-4B-Instruct, free Kaggle T4 GPU.</li>
+      <li><b>Second opinion</b>Zero-shot Qwen3.5 reads every message too; if it says emergency, so does the system.</li>
+      <li><b>Serve</b>Both models at 4 bits in Ollama, behind a FastAPI service, on a 16 GB Mac.</li>
+    </ol>
+  </figure>
+
+  <h2 id="results"><span class="n">3</span>Results</h2>
+  <div class="prose">
+    <p>Scored on two test sets frozen before training: 152 tenant-style messages and the 37 worked examples in the government guidance. The headline metric is emergency recall, the share of true emergencies caught; a <b>silent miss</b> is an emergency that was missed and not flagged for a person.</p>
+  </div>
+  <figure>
+    <div class="scroll"><table id="t1"></table></div>
+  </figure>
+  <figure>
+    <div class="panels" id="dots"></div>
+    <figcaption><b>Figure 1.</b> Emergency recall with 95% intervals. Hover a point for counts.</figcaption>
+  </figure>
+  <div class="prose" id="findings"></div>
+
+  <h2 id="limits"><span class="n">4</span>Limitations</h2>
+  <div class="prose">
+    <ul class="plain">
+      <li><b>No real tenant text, and small test sets.</b> The messages were written by a language model or are landlord summaries, with 71 emergencies in total, so intervals are wide.</li>
+      <li><b>Decision support, not automation.</b> The system flags; a person decides.</li>
+    </ul>
+  </div>
+
+  <h2 id="run"><span class="n">5</span>Run it</h2>
+  <div class="prose">
+    <p>The repository has the rules, data generator, training notebook, evaluation, tests and a CI job that re-scores every committed result on each push.</p>
+  </div>
+<pre>ollama pull qwen3.5:4b && bash scripts/deploy_ollama.sh &lt;gguf folder&gt;
+uvicorn api:app --app-dir src --port 8000      # demo at localhost:8000</pre>
+
+  <h2 id="refs">References</h2>
+  <ol class="refs">
+    <li>MHCLG (2026). <a href="https://www.gov.uk/government/publications/awaabs-law-phase-2-hazards-guidance-for-social-landlords/awaabs-law-phase-2-guidance-to-support-triaging-of-hazards">Awaab's Law Phase 2: Guidance to support triaging of hazards</a>.</li>
+    <li>MHCLG (2026). <a href="https://www.gov.uk/government/publications/awaabs-law-phase-2-guidance-for-social-housing-landlords/awaabs-law-phase-2-guidance-for-social-landlords">Awaab's Law Phase 2: Guidance for social landlords</a>.</li>
+    <li>Qwen Team. <a href="https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507">Qwen3-4B-Instruct-2507</a>. Fine-tuned with <a href="https://unsloth.ai">Unsloth</a>.</li>
+  </ol>
+
+  <footer><a href="https://github.com/matangolani/tenant-hazard-triage">Code and data on GitHub</a> · Official scenarios: Crown copyright, reproduced under the Open Government Licence v3.0. Code: MIT licence.</footer>
+</main>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<script src="data.js"></script>
+<script>
+const D = window.TRIAGE || { approaches: [], examples: [] };
+const SEV = { emergency: "Emergency", significant: "Significant", routine: "Routine", unclear: "Unclear" };
+const CAT = { damp_mould: "Damp and mould", excess_cold: "Excess cold", excess_heat: "Excess heat", falls: "Falls",
+  structural: "Structural collapse", fire_explosion: "Fire and explosion", electrical: "Electrical",
+  hygiene_pests: "Hygiene and pests", other_unclear: "Other or unclear" };
+const VULN = { infant: "infant", child: "child", elderly: "older person", disabled: "disabled person",
+  respiratory_condition: "breathing condition", other_health_condition: "health condition", pregnant: "pregnant" };
+const pct = v => v == null ? "–" : `${Math.round(v * 100)}%`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const A = Object.fromEntries(D.approaches.map(a => [a.key, a]));
+const bind = (k, html) => document.querySelectorAll(`[data-bind="${k}"]`).forEach(el => el.innerHTML = html);
+
+// --- headline stats
+const ft = A["ft-qwen3-4b-2507"]?.results, base = A["base-hf-qwen3-4b-2507"]?.results, rules = A["rules"]?.results;
+const ens = A["ensemble"]?.results, q35 = A["qwen3.5_4b"]?.results;
+const caught = r => Math.round(r.recall * r.emergencies);
+if (ens?.gold_v2 && ens?.official) {
+  const tile = (big, small) => `<div class="stat"><span class="big">${big}</span><span class="small">${small}</span></div>`;
+  document.getElementById("stats").innerHTML =
+    tile(`${caught(ens.gold_v2)}/${ens.gold_v2.emergencies}`, "emergencies caught in the 152-message test set") +
+    tile(`${caught(ens.official)}/${ens.official.emergencies}`, "emergencies caught in the government's own examples") +
+    tile(`${ens.gold_v2.silent_misses + ens.official.silent_misses}`, "silent miss across both sets") +
+    tile(pct(rules?.gold_v2?.recall), "caught by keyword rules, for comparison");
+}
+if (D.synthetic) {
+  bind("synth-gen", `${D.synthetic.generated.toLocaleString()} written by GLM-5.3-Flash, varying tone, length and spelling.`);
+  bind("synth-kept", `Blind re-label, policy, near-duplicate and contamination checks; ${D.synthetic.kept} kept (${D.synthetic.train} train, ${D.synthetic.val} validation), for about $${D.synthetic.cost_usd_reported_by_openrouter.toFixed(2)} of API time.`);
+}
+if (D.gold_composition) { const g = D.gold_composition;
+  bind("gold-comp", `152 tenant-style messages (${g.emergency} emergencies, ${g.significant} significant, ${g.routine} routine, ${g.unclear} unclear)`); }
+
+// --- Table 1
+const rowsWith = D.approaches.filter(a => a.results.gold_v2);
+const cell = (r, k, ciKey) => r ? `${pct(r[k])}${ciKey && r[ciKey] && r[ciKey][0] != null ? `<span class="ci">${pct(r[ciKey][0])}–${pct(r[ciKey][1])}</span>` : ""}` : `<span class="pending">pending</span>`;
+document.getElementById("t1").innerHTML = `
+  <thead><tr><th>Approach</th><th class="num">Emergency recall<br>gold</th><th class="num">Emergency precision<br>gold</th>
+    <th class="num">Emergency recall<br>official</th><th class="num">Silent misses<br>both sets</th><th class="num">Extra review<br>load, gold</th></tr></thead>
+  <tbody>${rowsWith.map(a => { const g = a.results.gold_v2, o = a.results.official;
+    const silent = g && o ? g.silent_misses + o.silent_misses : null;
+    return `<tr class="${a.kind === "ensemble" ? "ft" : ""}"><td>${a.label}<span class="note">${a.note}</span></td>
+      <td class="num">${cell(g, "recall", "recall_ci")}</td><td class="num">${cell(g, "precision", "precision_ci")}</td>
+      <td class="num">${cell(o, "recall", "recall_ci")}</td><td class="num">${silent ?? '<span class="pending">pending</span>'}</td>
+      <td class="num">${g ? pct(g.review_beyond) : '<span class="pending">pending</span>'}</td></tr>`; }).join("")}</tbody>
+  <caption><b>Table 1.</b> Gold set: 152 messages, ${A.rules?.results?.gold_v2?.emergencies ?? 54} emergencies. Official scenarios: 37, ${A.rules?.results?.official?.emergencies ?? 17} emergencies. Small numbers under each percentage are 95% intervals.</caption>`;
+
+// --- Figure 3: dot plot, one panel per test set
+const tip = document.getElementById("tip");
+function panel(setKey, title) {
+  const rows = rowsWith, W = 420, rowH = 34, top = 8, left = 168, right = 16, H = top + rows.length * rowH + 30;
+  const x = v => left + v * (W - left - right);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}: emergency recall by approach">`;
+  for (const t of [0, .25, .5, .75, 1]) s += `<line x1="${x(t)}" x2="${x(t)}" y1="${top}" y2="${H - 26}" stroke="#E6E9ED"/><text x="${x(t)}" y="${H - 10}" font-size="11" fill="#5A6472" text-anchor="middle">${t * 100}%</text>`;
+  rows.forEach((a, i) => {
+    const y = top + i * rowH + rowH / 2, r = a.results[setKey], hi = a.kind === "ensemble" || a.kind === "deployed";
+    const col = hi ? "#24527A" : "#18212B";
+    s += `<text x="0" y="${y + 4}" font-size="12" fill="${r ? "#18212B" : "#8A94A3"}">${(a.short || a.label).replace(", zero-shot", " (0-shot)").replace(", fine-tuned, on a Mac", " (FT, Mac)").replace(", fine-tuned", " (FT)")}</text>`;
+    if (!r) { s += `<text x="${left}" y="${y + 4}" font-size="11.5" fill="#8A94A3" font-style="italic">pending</text>`; return; }
+    const [lo, up] = r.recall_ci;
+    s += `<line x1="${x(lo)}" x2="${x(up)}" y1="${y}" y2="${y}" stroke="${col}" stroke-width="2" stroke-linecap="round" opacity="${hi ? 1 : .55}"/>`;
+    s += `<circle cx="${x(r.recall)}" cy="${y}" r="${hi ? 6 : 5}" fill="${col}" stroke="#FCFCFD" stroke-width="2"/>`;
+    s += `<rect x="${left}" y="${y - rowH / 2}" width="${W - left}" height="${rowH}" fill="transparent" data-tip="<b>${a.label}</b><br>${title}<br>Emergency recall ${pct(r.recall)} (${pct(lo)}–${pct(up)})<br>${Math.round(r.recall * r.emergencies)} of ${r.emergencies} emergencies caught<br>Silent misses: ${r.silent_misses}"/>`;
+  });
+  return `<div class="panel"><h4>${title}</h4>${s}</svg></div>`;
+}
+const dots = document.getElementById("dots");
+dots.innerHTML = panel("gold_v2", "Gold set") + panel("official", "Official scenarios");
+dots.addEventListener("mousemove", e => { const t = e.target.closest("[data-tip]");
+  if (!t) { tip.style.opacity = 0; return; }
+  tip.innerHTML = t.dataset.tip; tip.style.opacity = 1;
+  tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + "px"; tip.style.top = (e.clientY + 14) + "px"; });
+dots.addEventListener("mouseleave", () => tip.style.opacity = 0);
+
+// --- findings
+const F = [];
+if (ft?.gold_v2 && base?.gold_v2) F.push(`<p><b>Fine-tuning made the model more precise, not more sensitive.</b> False alarms fell from ${base.gold_v2.predicted_emergencies - caught(base.gold_v2)} to ${ft.gold_v2.predicted_emergencies - caught(ft.gold_v2)} (98% precision on clear-cut cases, the best of any model), but recall didn't move. It learned the synthetic data's style (98% recall on held-out synthetic messages) better than the task, and missed emergencies where the danger is implied rather than stated.</p>`);
+if (ens?.gold_v2 && q35?.gold_v2 && ft?.gold_v2) F.push(`<p><b>A second opinion closed the gap.</b> The two models miss different messages, so escalating when either says emergency caught all ${ens.gold_v2.emergencies} test-set emergencies (fine-tuned alone: ${caught(ft.gold_v2)}, p = 0.008), while flagging far fewer non-emergencies for review than Qwen3.5 alone (${pct(ens.gold_v2.review_beyond)} against ${pct(q35.gold_v2.review_beyond)}).</p>`);
+document.getElementById("findings").innerHTML = F.join("");
+
+// --- Section 1: replay of stored predictions
+function caseHTML(text, p, who) {
+  const v = (p.vulnerable_occupants || []).map(x => VULN[x] || x).join(", ") || "none mentioned";
+  return `<div class="msg"><span class="who">${who}</span>${esc(text)}</div>
+    <div class="arrow" aria-hidden="true">→</div>
+    <div class="tri" style="--c:var(--${p.severity});--bg:var(--${p.severity}-bg)">
+      <div class="head"><p class="word">${SEV[p.severity]}</p><p class="dl">${p.severity === "emergency" ? "Make safe within 24 hours" : p.severity === "significant" ? "Investigate within 10 working days" : p.severity === "routine" ? "Normal repair policy" : "Needs more information"}</p></div>
+      <dl><dt>Hazard</dt><dd>${CAT[p.category] || p.category}</dd>${p.location ? `<dt>Where</dt><dd>${esc(p.location)}</dd>` : ""}<dt>Vulnerable people</dt><dd>${v}</dd><dt>Confidence</dt><dd>${p.confidence}</dd></dl>
+      <p class="flag">${p.needs_human_review ? "Flagged for a person to review" : "Not flagged for review"}</p>
+      ${p.escalated_by_second_opinion ? `<p class="esc">Raised to emergency by the second-opinion model.</p>` : ""}
+    </div>`;
+}
+const RP = D.replay, RR = RP ? Object.fromEntries(RP.rows.map(r => [r.id, r])) : {};
+const PICK_LABEL = { "gold-0001": "Mould, toddler coughing", "gold-0016": "Warm light switch", "gold-0090": "Water in a light fitting",
+  "gold-0128": "Leak by a socket", "gold-0058": "Slate off the roof", "official-17": "Broken high-rise window",
+  "official-06": "No heating, elderly tenant", "official-28": "Hot cylinder over bedroom", "gold-0094": "Red-hot radiator",
+  "official-31": "Old consumer unit", "official-05": "Mould above shower" };
+function showReplay(id) {
+  const r = RR[id]; if (!r) return;
+  document.querySelectorAll("#picker button").forEach(b => b.setAttribute("aria-pressed", b.dataset.id === id));
+  document.getElementById("replay-case").innerHTML = caseHTML(r.text, r.pred, r.set === "official" ? "Government scenario" : "Tenant message (gold set)");
+  const ok = r.gold === r.pred.severity;
+  document.getElementById("replay-verdict").innerHTML = ok
+    ? `<span class="ok">Right.</span> Correct label: ${SEV[r.gold]}.`
+    : `<span class="bad">Wrong.</span> Correct label: ${SEV[r.gold]}. ${r.gold === "emergency" ? (r.pred.needs_human_review ? "A missed emergency, but flagged for a person." : "A silent miss: the worst kind of error.") : "A false alarm: a person checks it and downgrades it."}`;
+}
+if (RP && RP.rows.length) {
+  const pk = document.getElementById("picker");
+  pk.innerHTML = RP.picks.map(id => `<button type="button" data-id="${id}" aria-pressed="false">${PICK_LABEL[id] || id}</button>`).join("") +
+    `<button type="button" class="rand" id="rand">Random test message</button>`;
+  pk.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
+    if (b.id === "rand") { const r = RP.rows[Math.floor(Math.random() * RP.rows.length)]; showReplay(r.id); } else showReplay(b.dataset.id); });
+  showReplay(RP.picks[0]);
+} else document.querySelector(".replay").style.display = "none";
+
+</script>
+</body>
+</html>

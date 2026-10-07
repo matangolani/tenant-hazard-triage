@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gold Set Review — v1 to v2</title>
+<style>
+  :root{
+    --bg:#eef1f4; --panel:#fff; --ink:#1b2733; --muted:#5c6b7a; --line:#d7dee6;
+    --accent:#3457d5; --accent-soft:#e6ecfb;
+    --em:#d64545; --em-soft:#fbe8e8; --sig:#c9820a; --sig-soft:#faf0dd; --ro:#2e8b57; --ro-soft:#e4f3ea; --un:#7a8794; --un-soft:#eceff2;
+    --radius:10px;
+  }
+  @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+    --bg:#12171d; --panel:#1b232c; --ink:#e7edf3; --muted:#9fb0bf; --line:#2c3743;
+    --accent:#7d97ee; --accent-soft:#22304f;
+    --em:#f0736f; --em-soft:#3a2020; --sig:#e0a53a; --sig-soft:#352a13; --ro:#5cc189; --ro-soft:#16301f; --un:#9aa8b5; --un-soft:#232b33;
+  }}
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.45;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:18px 16px 80px}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  h1{font-size:17px;margin:0 0 6px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+  .bar button{font:inherit;font-size:13px;padding:7px 13px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;font-weight:600}
+  .bar .ghost{background:var(--panel);color:var(--ink);border-color:var(--line);font-weight:400}
+  .dist{display:flex;gap:6px;flex-wrap:wrap}
+  .pill{display:inline-flex;gap:5px;align-items:center;padding:2px 8px;border-radius:20px;border:1px solid var(--line);font-size:12px;color:var(--ink)}
+  .dot{width:8px;height:8px;border-radius:50%} .d-emergency{background:var(--em)} .d-significant{background:var(--sig)} .d-routine{background:var(--ro)} .d-unclear{background:var(--un)}
+  section{margin:26px 0}
+  section > h2{font-size:15px;margin:0 0 4px}
+  section > p.lede{margin:0 0 12px;font-size:13px;color:var(--muted);max-width:68ch}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
+  .card.done{border-left:4px solid var(--accent)}
+  .meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+  .msg{font-family:Georgia,"Times New Roman",serif;font-size:16.5px;line-height:1.5;margin:0 0 10px}
+  .cur{font-size:12px;color:var(--muted);margin-bottom:10px}
+  .cur b{color:var(--ink);font-weight:600}
+  .field{border-top:1px solid var(--line);padding-top:10px;margin-top:10px}
+  .fhead{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .choices{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  .choice{font:inherit;font-size:13px;padding:6px 11px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+  .choice.sel{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+  .choice.sel.emergency{border-color:var(--em);background:var(--em-soft)}
+  .choice.sel.significant{border-color:var(--sig);background:var(--sig-soft)}
+  .choice.sel.routine{border-color:var(--ro);background:var(--ro-soft)}
+  .note{font-size:13px;margin:4px 0 0;max-width:72ch}
+  details.rules{font-size:12px;color:var(--muted);margin-top:6px}
+  details.rules summary{cursor:pointer}
+  details.rules li{margin:3px 0}
+  .tag{font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 5px;margin-left:4px;color:var(--muted)}
+  .adds label{display:flex;gap:7px;align-items:center;font-size:13px;margin:3px 0;cursor:pointer}
+  .empty{font-size:13px;color:var(--muted)}
+  .status{font-size:12px;color:var(--muted);min-height:16px}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Gold set review — v1 → v2</h1>
+    <div class="bar">
+      <span id="prog"></span>
+      <span class="dist" id="dist"></span>
+      <span style="flex:1"></span>
+      <button class="ghost" id="reset" title="Restore all defaults">Reset</button>
+      <button id="dl">Download gold_v2.jsonl</button>
+    </div>
+    <div class="status" id="status"></div>
+  </header>
+
+  <p style="font-size:14px;max-width:70ch">Every proposal cites a rule from spec v2, which is drawn from the government's Awaab's Law guidance. Defaults are already set, so if you agree with a section you can skip it. Your choices save automatically in this browser. Download when you're done.</p>
+
+  <section id="s-rule"><h2>Rule decides</h2><p class="lede">A spec rule settles these. They're set to <b>accept</b>. Skim them and click "Keep" on any you think misread the message.</p><div></div></section>
+  <section id="s-forced"><h2>Your current label isn't possible under the law</h2><p class="lede">"Significant" only exists for the eight hazard categories, so each of these has to be either emergency or routine. My proposal is preselected; pick the other if you read the message differently.</p><div></div></section>
+  <section id="s-suggest"><h2>Your call</h2><p class="lede">The rules don't settle these. They're set to <b>keep your label</b>, and I've added a suggestion where I have one. Whatever you choose, these are tagged as boundary cases and reported separately.</p><div></div></section>
+  <section id="s-additions"><h2>Mechanical additions</h2><p class="lede">People the message names but the label missed, and second categories that also count as correct where hazards overlap (the guidance says not to agonise over category when hazards overlap). All are ticked; untick any you disagree with.</p><div></div></section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var DATA = /*__DATA__*/null;
+  var KEY = "awaab_gold_review_v2";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e) { state = {}; }
+  function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function st(it){
+    if(!state[it.id]){
+      var s = {fields:{}, also:{}, vuln:{}, touched:false};
+      it.fields.forEach(function(f,k){ s.fields[k] = (f.tier==="suggest") ? "keep" : "proposal"; });
+      it.also.forEach(function(c){ s.also[c] = true; });
+      it.vuln_add.forEach(function(v){ s.vuln[v] = true; });
+      state[it.id] = s;
+    }
+    return state[it.id];
+  }
+  function finalLabel(it){
+    var s = st(it), g = JSON.parse(JSON.stringify(it.cur));
+    it.fields.forEach(function(f,k){
+      var d = s.fields[k];
+      if(d === "proposal") g[f.field] = f.to;
+      else if(d === "alt") g[f.field] = f.alt;
+    });
+    it.vuln_add.forEach(function(v){ if(s.vuln[v] && g.vulnerable_occupants.indexOf(v) < 0) g.vulnerable_occupants.push(v); });
+    var also = it.also.filter(function(c){ return s.also[c] && c !== g.category; });
+    return {gold:g, also:also};
+  }
+
+  function ruleList(ids){
+    return '<details class="rules"><summary>Rules cited: ' + ids.join(", ") + '</summary><ul>' +
+      ids.map(function(id){ var r = DATA.rules[id];
+        return '<li><b>' + id + '</b><span class="tag">' + r.kind + '</span> ' + esc(r.text) + ' <i>(' + esc(r.source) + ')</i></li>'; }).join("") +
+      '</ul></details>';
+  }
+  function btn(label, val, cur, cls){
+    return '<button class="choice ' + (cls||"") + (val===cur ? " sel" : "") + '" data-v="' + val + '">' + esc(label) + '</button>';
+  }
+  function card(it){
+    var s = st(it), c = it.cur;
+    var h = '<div class="card' + (s.touched ? " done" : "") + '" id="c-' + it.id + '">' +
+      '<div class="meta"><span>' + it.id + '</span><span>' + (s.touched ? "reviewed" : "") + '</span></div>' +
+      '<p class="msg">' + esc(it.text) + '</p>' +
+      '<div class="cur">Current label: <b>' + c.category + '</b> · <b>' + c.severity + '</b>' +
+      (c.vulnerable_occupants.length ? ' · ' + c.vulnerable_occupants.join(", ") : "") + '</div>';
+    it.fields.forEach(function(f,k){
+      var d = s.fields[k], fromv = c[f.field], opts = "";
+      if(f.tier === "rule"){ opts = btn("Accept → " + f.to, "proposal", d, f.to) + btn("Keep " + fromv, "keep", d, fromv); }
+      else if(f.tier === "forced"){ opts = btn(f.to, "proposal", d, f.to) + btn(f.alt, "alt", d, f.alt); }
+      else { opts = btn("Keep " + fromv, "keep", d, fromv) + (f.to !== fromv ? btn("Change → " + f.to, "proposal", d, f.to) : ""); }
+      h += '<div class="field" data-k="' + k + '"><div class="fhead">' + (f.field === "severity" ? "Severity" : "Category") +
+           '</div><div class="choices">' + opts + '</div><p class="note">' + esc(f.note) + '</p>' + ruleList(f.rules) + '</div>';
+    });
+    if(it.also.length || it.vuln_add.length){
+      h += '<div class="field adds"><div class="fhead">Additions</div>';
+      it.vuln_add.forEach(function(v){ h += '<label><input type="checkbox" data-vuln="' + v + '"' + (s.vuln[v] ? " checked" : "") + '> add vulnerable occupant: ' + v + '</label>'; });
+      it.also.forEach(function(a){ h += '<label><input type="checkbox" data-also="' + a + '"' + (s.also[a] ? " checked" : "") + '> also accept category: ' + a + '</label>'; });
+      h += '</div>';
+    }
+    return h + '</div>';
+  }
+
+  function render(){
+    ["rule","forced","suggest","additions"].forEach(function(g){
+      var list = DATA.items.filter(function(it){ return it.group === g; });
+      var box = document.querySelector("#s-" + g + " > div");
+      box.innerHTML = list.length ? list.map(card).join("") : '<p class="empty">Nothing here.</p>';
+      var h2 = document.querySelector("#s-" + g + " > h2");
+      h2.textContent = h2.textContent.replace(/ \(\d+\)$/, "") + " (" + list.length + ")";
+    });
+    summary();
+  }
+  function summary(){
+    var rev = DATA.items.filter(function(it){ return it.group !== "none"; });
+    var done = rev.filter(function(it){ return st(it).touched; }).length;
+    document.getElementById("prog").textContent = done + " of " + rev.length + " touched (defaults count as decisions)";
+    var cnt = {emergency:0, significant:0, routine:0, unclear:0};
+    DATA.items.forEach(function(it){ cnt[finalLabel(it).gold.severity]++; });
+    document.getElementById("dist").innerHTML = Object.keys(cnt).map(function(k){
+      return '<span class="pill"><span class="dot d-' + k + '"></span>' + k + ' ' + cnt[k] + '</span>'; }).join("");
+  }
+
+  document.addEventListener("click", function(e){
+    var b = e.target.closest("button.choice"); if(!b) return;
+    var cardEl = b.closest(".card"), id = cardEl.id.slice(2), k = b.closest(".field").dataset.k;
+    var it = DATA.items.filter(function(x){ return x.id === id; })[0], s = st(it);
+    s.fields[k] = b.dataset.v; s.touched = true; save();
+    cardEl.outerHTML = card(it); summary();
+  });
+  document.addEventListener("change", function(e){
+    var cb = e.target; if(cb.type !== "checkbox") return;
+    var cardEl = cb.closest(".card"), id = cardEl.id.slice(2);
+    var it = DATA.items.filter(function(x){ return x.id === id; })[0], s = st(it);
+    if(cb.dataset.vuln) s.vuln[cb.dataset.vuln] = cb.checked;
+    if(cb.dataset.also) s.also[cb.dataset.also] = cb.checked;
+    s.touched = true; save(); summary();
+  });
+  document.getElementById("reset").onclick = function(){
+    state = {}; save(); render();
+    document.getElementById("status").textContent = "All choices reset to defaults.";
+  };
+  document.getElementById("dl").onclick = function(){
+    var lines = DATA.items.map(function(it){
+      var f = finalLabel(it), s = st(it);
+      var changes = [];
+      it.fields.forEach(function(fd,k){
+        changes.push({field:fd.field, tier:fd.tier, from:it.cur[fd.field], proposed:fd.to,
+                      decision:s.fields[k], final:f.gold[fd.field], rules:fd.rules});
+      });
+      var row = {id:it.id, text:it.text, gold:f.gold, category_also:f.also,
+                 boundary: it.fields.some(function(fd){ return fd.tier === "suggest"; }),
+                 spec_version: DATA.spec_version};
+      if(changes.length) row.review = changes;
+      var added = it.vuln_add.filter(function(v){ return s.vuln[v]; });
+      if(added.length) row.vuln_added = added;
+      return JSON.stringify(row);
+    });
+    var blob = new Blob([lines.join("\n") + "\n"], {type:"application/x-ndjson"});
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "gold_v2.jsonl";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    document.getElementById("status").textContent = "Downloaded gold_v2.jsonl (" + lines.length + " messages). Put it in the project's data/ folder.";
+  };
+  render();
+})();
+</script>
+</body>
+</html>

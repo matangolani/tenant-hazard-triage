@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.DS_Store
+.venv/
+
+# regenerated or large
+kaggle_bundle/
+*.gguf
+adapter_*.zip
+deploy/Modelfile
+data/synth/calls.jsonl
+data/synth/raw.jsonl

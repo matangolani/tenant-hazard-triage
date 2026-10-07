@@ -1,0 +1,6 @@
+data/synth
+kaggle_bundle
+outputs
+notebooks
+*.gguf
+**/__pycache__

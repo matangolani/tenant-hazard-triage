@@ -1,0 +1,23 @@
+{
+  "gold_v2": {
+    "emerg_recall": 0.8704,
+    "emerg_precision": 0.7966,
+    "review": 0.4013,
+    "sev_acc": 0.7829,
+    "parse_errors": 0
+  },
+  "official": {
+    "emerg_recall": 0.5882,
+    "emerg_precision": 0.8333,
+    "review": 0.3243,
+    "sev_acc": 0.7297,
+    "parse_errors": 0
+  },
+  "synth_val": {
+    "emerg_recall": 0.8049,
+    "emerg_precision": 0.8462,
+    "review": 0.4706,
+    "sev_acc": 0.8,
+    "parse_errors": 0
+  }
+}

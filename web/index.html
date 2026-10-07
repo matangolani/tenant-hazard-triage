@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenant Hazard Triage — demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FCFCFD; --ink: #18212B; --muted: #5A6472; --rule: #D9DEE4; --field: #F3F5F8; --link: #24527A;
+    --emergency: #B42318; --emergency-bg: #FCEDEB;
+    --significant: #B07D00; --significant-bg: #FBF3E0;
+    --routine: #1E8463; --routine-bg: #E8F4EF;
+    --unclear: #6155B8; --unclear-bg: #EFEDF9;
+    --serif: "Literata", Georgia, serif; --sans: "Public Sans", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 var(--sans); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 56px; }
+  header h1 { font: 600 1.75rem/1.2 var(--serif); margin: 0 0 6px; }
+  header p { margin: 0; color: var(--muted); max-width: 62ch; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; margin-top: 32px; align-items: start; }
+  label.title { display: block; font-weight: 600; margin-bottom: 8px; }
+  textarea { width: 100%; min-height: 220px; resize: vertical; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 6px;
+             background: #fff; color: var(--ink); font: 16px/1.55 var(--sans); }
+  textarea:focus-visible, button:focus-visible { outline: 3px solid color-mix(in srgb, var(--link) 45%, transparent); outline-offset: 2px; }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 20px; }
+  .examples button { border: 1px solid var(--rule); background: #fff; color: var(--ink); border-radius: 999px; padding: 6px 12px;
+                     font: 500 0.875rem var(--sans); cursor: pointer; }
+  .examples button:hover { border-color: var(--link); color: var(--link); }
+  .run { background: var(--ink); color: #fff; border: 0; border-radius: 6px; padding: 11px 18px; font: 600 1rem var(--sans); cursor: pointer; }
+  .run[disabled] { opacity: .55; cursor: progress; }
+  .hint { color: var(--muted); font-size: .875rem; margin-top: 10px; }
+
+  .card { border: 1px solid var(--rule); border-radius: 8px; background: #fff; min-height: 340px; overflow: hidden; }
+  .empty { padding: 32px; color: var(--muted); }
+  .sev { padding: 22px 24px 18px; border-left: 6px solid var(--c); background: var(--bg); }
+  .sev .word { font: 600 2.25rem/1 var(--serif); color: var(--c); margin: 0; }
+  .sev .basis { margin: 8px 0 0; color: var(--ink); }
+  .clock { margin-top: 14px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .clock .due { font-weight: 600; }
+  .clock .left { font-variant-numeric: tabular-nums; font-size: 1.25rem; font-weight: 600; color: var(--c); }
+  .review { margin: 0; padding: 12px 24px; border-bottom: 1px solid var(--rule); font-weight: 500; }
+  .review.yes { background: var(--field); }
+  dl { margin: 0; padding: 16px 24px 8px; display: grid; grid-template-columns: max-content 1fr; gap: 8px 20px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; }
+  .review .note { display: block; font-weight: 400; color: var(--muted); font-size: .875rem; margin-top: 2px; }
+  .meta { padding: 10px 24px 16px; color: var(--muted); font-size: .8125rem; }
+  .error { padding: 24px; color: var(--emergency); }
+  @media (max-width: 820px) { .grid { grid-template-columns: 1fr; gap: 28px; } .wrap { padding: 28px 16px 40px; } }
+  @media (prefers-reduced-motion: no-preference) { .card.fresh .sev { animation: settle .35s ease-out; } }
+  @keyframes settle { from { opacity: .3; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Tenant Hazard Triage</h1>
+    <p>Paste a tenant's repair report. Two small models running on this machine sort it by hazard and urgency under Awaab's Law and works out the legal deadline. A person always makes the final call.</p>
+  </header>
+
+  <div class="grid">
+    <section aria-label="Tenant message">
+      <label class="title" for="msg">Tenant message</label>
+      <textarea id="msg" placeholder="e.g. There's water coming through the ceiling light in the kitchen…"></textarea>
+      <div class="examples" id="examples" aria-label="Example messages"></div>
+      <button class="run" id="run">Triage message</button>
+      <p class="hint" id="hint">Runs locally. Nothing leaves this computer.</p>
+    </section>
+
+    <section aria-label="Triage result" aria-live="polite">
+      <div class="card" id="card"><p class="empty">Paste a message or pick an example to see how it would be triaged.</p></div>
+    </section>
+  </div>
+</div>
+
+<script>
+const CAT = { damp_mould: "Damp and mould", excess_cold: "Excess cold", excess_heat: "Excess heat", falls: "Falls",
+  structural: "Structural collapse", fire_explosion: "Fire and explosion", electrical: "Electrical",
+  hygiene_pests: "Hygiene, sanitation and pests", other_unclear: "Other or unclear" };
+const VULN = { infant: "infant", child: "child", elderly: "older person", disabled: "disabled person",
+  respiratory_condition: "breathing condition", other_health_condition: "health condition", pregnant: "pregnant" };
+const SEV = { emergency: "Emergency", significant: "Significant", routine: "Routine", unclear: "Unclear" };
+const $ = id => document.getElementById(id);
+let timer = null;
+
+fetch("/examples").then(r => r.json()).then(list => {
+  for (const ex of list) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = ex.label;
+    b.onclick = () => { $("msg").value = ex.text; $("msg").focus(); };
+    $("examples").append(b);
+  }
+}).catch(() => {});
+
+fetch("/health").then(r => r.json()).then(h => {
+  $("hint").textContent = h.backend === "ollama"
+    ? `Runs locally through Ollama: ${h.model}. Nothing leaves this computer.`
+    : "Running the keyword-rules baseline (no model loaded).";
+}).catch(() => {});
+
+const fmtDate = s => new Date(s).toLocaleString("en-GB", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const fmtDay = s => new Date(s + "T12:00:00").toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+
+function countdown(el, iso) {
+  const tick = () => {
+    const ms = new Date(iso) - Date.now();
+    if (ms <= 0) { el.textContent = "deadline passed"; return; }
+    const h = Math.floor(ms / 3.6e6), m = Math.floor(ms % 3.6e6 / 6e4), s = Math.floor(ms % 6e4 / 1e3);
+    el.textContent = `${h}h ${String(m).padStart(2, "0")}m ${String(s).padStart(2, "0")}s left`;
+  };
+  tick(); timer = setInterval(tick, 1000);
+}
+
+function render(r) {
+  clearInterval(timer);
+  const sev = r.severity, d = r.deadline;
+  const card = $("card");
+  card.className = "card fresh";
+  card.style.setProperty("--c", `var(--${sev})`); card.style.setProperty("--bg", `var(--${sev}-bg)`);
+  let clock = "";
+  if (d.make_safe_by) clock = `<div class="clock"><span class="due">Make safe by ${fmtDate(d.make_safe_by)}</span><span class="left" id="left"></span></div>`;
+  else if (d.investigate_by) clock = `<div class="clock"><span class="due">Investigate by ${fmtDay(d.investigate_by)}</span></div>`;
+  const vuln = r.vulnerable_occupants.length ? r.vulnerable_occupants.map(v => VULN[v] || v).join(", ") : "none mentioned";
+  card.innerHTML = `
+    <div class="sev"><p class="word">${SEV[sev]}</p><p class="basis">${d.basis[0].toUpperCase() + d.basis.slice(1)}${d.make_safe ? `; make safe ${d.make_safe}` : ""}.</p>${clock}</div>
+    <p class="review ${r.needs_human_review ? "yes" : ""}">${r.needs_human_review ? "Flagged for a person to review before anything is sent." : "Not flagged for review."}${second(r.meta)}</p>
+    <dl>
+      <dt>Hazard</dt><dd>${CAT[r.category] || r.category}</dd>
+      <dt>Where</dt><dd>${esc(r.location)}</dd>
+      <dt>Vulnerable people</dt><dd>${vuln}</dd>
+      <dt>How long</dt><dd>${esc(r.duration)}</dd>
+      <dt>Model confidence</dt><dd>${r.confidence}</dd>
+    </dl>
+    <p class="meta">${r.meta.model}, ${(r.meta.latency_ms / 1000).toFixed(1)} s, spec v${r.meta.spec_version}</p>`;
+  if (d.make_safe_by) countdown($("left"), d.make_safe_by);
+}
+
+function second(m) {
+  const so = m.second_opinion;
+  if (!so) return "";
+  if (so.error) return ` <span class="note">Second-opinion model unavailable, so flagged to be safe.</span>`;
+  if (m.escalated_by_second_opinion) return ` <span class="note">Raised to emergency because the second-opinion model (${esc(so.model)}) called it one.</span>`;
+  return ` <span class="note">Second opinion (${esc(so.model)}): ${SEV[so.severity] || so.severity}.</span>`;
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+async function run() {
+  const text = $("msg").value.trim();
+  if (text.length < 3) { $("card").innerHTML = '<p class="empty">Type or paste a message first.</p>'; return; }
+  $("run").disabled = true; $("run").textContent = "Triaging…";
+  try {
+    const res = await fetch("/triage", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+    const body = await res.json();
+    if (!res.ok) throw new Error(body.detail?.toString() || `HTTP ${res.status}`);
+    render(body);
+  } catch (e) {
+    clearInterval(timer);
+    $("card").className = "card";
+    $("card").innerHTML = `<p class="error">Couldn't triage this message. ${esc(e.message)}</p>`;
+  } finally {
+    $("run").disabled = false; $("run").textContent = "Triage message";
+  }
+}
+$("run").onclick = run;
+$("msg").addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) run(); });
+</script>
+</body>
+</html>

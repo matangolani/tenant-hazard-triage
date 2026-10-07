@@ -1,0 +1,16 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements-dev.txt
+      - name: Unit and API tests (keyword-rules backend, no model needed)
+        run: python -m pytest -q tests
+      - name: Results regression check
+        run: python src/check_results.py
+      - name: Docker image builds
+        run: docker build -t tenant-hazard-triage .

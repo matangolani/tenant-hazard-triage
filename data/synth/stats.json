@@ -1,0 +1,51 @@
+{
+  "teacher": "z-ai/glm-5.3-flash",
+  "spec_version": "2.0",
+  "calls": 898,
+  "generated": 1447,
+  "kept": 898,
+  "train": 813,
+  "val": 85,
+  "rejected_by_reason": {
+    "verifier_disagrees_severity": 387,
+    "generator_off_target": 143,
+    "verifier_disagrees_category": 15,
+    "leaked_label_word": 1,
+    "length": 2,
+    "near_duplicate": 1
+  },
+  "severity": {
+    "routine": 292,
+    "emergency": 405,
+    "unclear": 7,
+    "significant": 194
+  },
+  "category": {
+    "electrical": 74,
+    "other_unclear": 192,
+    "structural": 107,
+    "fire_explosion": 111,
+    "excess_heat": 82,
+    "excess_cold": 63,
+    "falls": 85,
+    "damp_mould": 99,
+    "hygiene_pests": 85
+  },
+  "kind": {
+    "single": 192,
+    "contrast": 384,
+    "contrast_half": 257,
+    "vague": 7,
+    "admin": 58
+  },
+  "api_calls_this_run": 2231,
+  "tokens_in": 3215629,
+  "tokens_out": 527058,
+  "reasoning_tokens": 185570,
+  "avg_tokens_out_per_call": 236.2,
+  "cost_usd_reported_by_openrouter": 0.4961,
+  "est_cost_usd_this_run": 0.3767,
+  "reasoning": "low",
+  "verify_reasoning": "low",
+  "seconds": 596.7
+}

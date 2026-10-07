@@ -1,0 +1,137 @@
+{
+  "name": "Zero-shot qwen3.5_9b",
+  "n_scored": 152,
+  "n_missing_predictions": 0,
+  "n_extra_predictions": 0,
+  "headline": {
+    "emergency_recall_strict": 1.0,
+    "emergency_recall_caught_or_escalated": 1.0,
+    "emergency_precision": 0.4355,
+    "emergency_support": 27
+  },
+  "severity_accuracy": 0.6645,
+  "severity_macro_f1": 0.6864,
+  "category_accuracy": 0.7303,
+  "category_macro_f1": 0.7248,
+  "severity_per_class": {
+    "emergency": {
+      "precision": 0.435,
+      "recall": 1.0,
+      "f1": 0.607,
+      "support": 27
+    },
+    "significant": {
+      "precision": 0.793,
+      "recall": 0.348,
+      "f1": 0.484,
+      "support": 66
+    },
+    "routine": {
+      "precision": 0.825,
+      "recall": 0.887,
+      "f1": 0.855,
+      "support": 53
+    },
+    "unclear": {
+      "precision": 1.0,
+      "recall": 0.667,
+      "f1": 0.8,
+      "support": 6
+    }
+  },
+  "category_per_class": {
+    "damp_mould": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "support": 25
+    },
+    "excess_cold": {
+      "precision": 0.857,
+      "recall": 0.923,
+      "f1": 0.889,
+      "support": 13
+    },
+    "excess_heat": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.857,
+      "support": 3
+    },
+    "falls": {
+      "precision": 0.214,
+      "recall": 1.0,
+      "f1": 0.353,
+      "support": 3
+    },
+    "structural": {
+      "precision": 0.675,
+      "recall": 0.73,
+      "f1": 0.701,
+      "support": 37
+    },
+    "fire_explosion": {
+      "precision": 0.615,
+      "recall": 1.0,
+      "f1": 0.762,
+      "support": 8
+    },
+    "electrical": {
+      "precision": 0.875,
+      "recall": 0.667,
+      "f1": 0.757,
+      "support": 21
+    },
+    "hygiene_pests": {
+      "precision": 0.6,
+      "recall": 1.0,
+      "f1": 0.75,
+      "support": 9
+    },
+    "other_unclear": {
+      "precision": 0.909,
+      "recall": 0.303,
+      "f1": 0.455,
+      "support": 33
+    }
+  },
+  "severity_confusion": {
+    "emergency": {
+      "emergency": 27
+    },
+    "significant": {
+      "emergency": 34,
+      "significant": 23,
+      "routine": 9
+    },
+    "routine": {
+      "routine": 47,
+      "significant": 5,
+      "emergency": 1
+    },
+    "unclear": {
+      "unclear": 4,
+      "significant": 1,
+      "routine": 1
+    }
+  },
+  "confidence_calibration": {
+    "high": {
+      "severity_accuracy": 0.653,
+      "n": 147
+    },
+    "low": {
+      "severity_accuracy": 1.0,
+      "n": 3
+    },
+    "medium": {
+      "severity_accuracy": 1.0,
+      "n": 2
+    }
+  },
+  "latency_ms": 12652.29,
+  "latency_ms_median": 14406.9,
+  "parse_errors": 0,
+  "schema_violations": 0,
+  "_missing_ids": []
+}

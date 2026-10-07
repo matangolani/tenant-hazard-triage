@@ -1,0 +1,30 @@
+======================================================================
+  Zero-shot gemma4:e4b
+======================================================================
+
+[all]  n=37  true emergencies=17
+  strict emergency recall     76.5% [53%–90%]
+  caught-or-escalated         76.5%
+  emergency precision         81.2% [57%–93%]  (16 predicted)
+  sent to human review        46.0%
+  severity macro-F1 0.70   category accuracy 94.6% (strict 94.6%)
+
+[clean]  n=25  true emergencies=14
+  strict emergency recall     71.4% [45%–88%]
+  caught-or-escalated         71.4%
+  emergency precision         76.9% [50%–92%]  (13 predicted)
+  sent to human review        52.0%
+  severity macro-F1 0.72   category accuracy 96.0% (strict 96.0%)
+
+SEVERITY confusion, all (row = gold, col = predicted):
+  gold\pred    emerg  signi  routi  uncle  
+  emergency    13     4      0      0      
+  significant  3      9      0      0      
+  routine      0      3      4      1      
+  unclear      0      0      0      0      
+
+confidence calibration: high 72% (n=36), medium 0% (n=1)
+reliability: 0 parse errors, 0 schema violations, 1 policy violations (other_unclear + significant)
+median latency: 1756.3 ms
+
+metrics written to outputs/metrics_official_gemma4_e4b.json
